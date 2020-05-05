@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.16/angular.min.js"></script>
+</head>
+<body ng-app="myApp">
+	<h1>Employee Info</h1>
+	<div>
+		<form name="saveEmployeeData" ng-controller="myController"
+			ng-submit="submitForm()">
+
+			First name: <br /> <input type="text" id="firstName"
+				name="firstName" ng-model='formData.firstName'> <br /> <br />
+			Last name: <br /> <input type="text" id="lastName" name="lastName"
+				ng-model='formData.lastName'> <br /> <br /> Email Address:
+			<br /> <input type="text" id="emailId" ng-model="formData.emailId">
+
+			<br /> <br /> Address1 : <br /> <select ng-model="addressType"
+				ng-options="x for x in types">
+			</select><br />
+			<textarea rows="3" cols="25" id="address1" name="address1"
+				ng-model="formData.employeeAddresses[0].addressDetails">
+              Address1 
+            </textarea>
+			<br />
+			<div ng-repeat="element in elements">
+				<br /> Address{{$index+2}} : <br /> <select ng-model="addressType"
+					ng-options="x for x in types">
+				</select><br />
+				<textarea rows="3" cols="25" name="address1"
+					ng-model="element.addressDetails">
+              Address1 
+            </textarea>
+				<br />
+			</div>
+			<br /> <b>Click here to add Another Address:</b><br /> <input
+				type="button" value="Add Another Address" ng-click="newItem()" /> <br />
+
+
+			<button type="submit" ng-click='insertData()'>Submit</button>
+		</form>
+	</div>
+	<!-- <div ng-controller="myController">
+		Response Data: {{data}} <br /> Error: {{error}}
+	</div> -->
+	<script>
+		var myApp = angular.module('myApp', []);
+
+		myApp
+				.controller(
+						"myController",
+						function($scope, $http) {
+							$scope.formData = {
+								employeeAddresses : []
+							};
+							$scope.counter = 1;
+							$scope.elements = [];
+							$scope.types = [ "Permanent", "Current", "Office" ];
+							var onSuccess = function(data, status, headers,
+									config) {
+								$scope.data = data;
+								$http
+										.get(
+												"http://localhost:8080/spring-activemq-sample/employeeInfo/consume")
+										.success(onSuccess).error(onError);
+							};
+
+							var onError = function(data, status, headers,
+									config) {
+								$scope.error = status;
+							}
+
+							var getAPISuccess = function(data, status, headers,
+									config) {
+								$scope.data = data;
+							};
+
+							$scope.newItem = function() {
+								$scope.counter++;
+								console.log($scope.elements, $scope.counter);
+								$scope.elements.push({
+									addressDetails : ''
+								});
+								/* if($scope.elements.length){
+								$scope.formData.employeeAddresses[$scope.counter].push($scope.elements[$scope.counter-1])
+								} */
+							}
+							$scope.insertData = function() {
+								if ($scope.elements.length) {
+									for (var i = 0; i < $scope.elements.length; i++) {
+										delete $scope.elements[i].$$hashKey;
+										$scope.formData.employeeAddresses
+												.push($scope.elements[i])
+									}
+								}
+								console.log($scope.formData)
+								var postReq = {
+									method : 'POST',
+									url : 'http://localhost:8080/spring-activemq-sample/employeeInfo/produce',
+									data : $scope.formData
+								};
+								console.log(postReq.data);
+
+								$http(postReq).success(onSuccess)
+										.error(onError);
+
+							}
+						});
+	</script>
+
+</body>
+</html>
