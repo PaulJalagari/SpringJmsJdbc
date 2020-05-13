@@ -1,0 +1,36 @@
+<html lang="en" ng-app='multiSelectApp'>
+
+<head>
+    <!-- <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title> -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.9/angular.min.js"></script>
+    <link rel="stylesheet" href="css/isteven-multi-select-4.0.0.css">
+
+    <script src="isteven-multi-select-4.0.0.js"></script>
+</head>
+
+<body ng-controller='multiSelectController'>
+    <div isteven-multi-select input-model="modernBrowsers" output-model="outputBrowsers" button-label="icon name"
+        item-label="icon name maker" tick-property="ticked">
+    </div>
+    <pre ng-bind="outputBrowsers |json"></pre>
+
+    <script>
+        var multiSelectApp = angular.module('multiSelectApp', ["isteven-multi-select"])
+
+        multiSelectApp.controller('multiSelectController', function ($scope, $http) {
+            $scope.outputBrowsers = [];
+            $scope.modernBrowsers = [
+                { name: "Opera", maker: "(Opera Software)", ticked: true },
+                { name: "Internet Explorer", maker: "(Microsoft)", ticked: false },
+                { name: "Firefox", maker: "(Mozilla Foundation)", ticked: true },
+                { name: "Safari", maker: "(Apple)", ticked: false },
+                { name: "Chrome", maker: "(Google)", ticked: true }
+            ];
+        });
+    </script>
+
+</body>
+
+</html>

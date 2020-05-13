@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<option ng-repeat="c in colors" ng-disabled="c.shade=='dark'"
+		value="{{c.name}}">{{c.name}}</option>
+	<select
+		ng-options="c as c.name disable when disableColor(c) for c in colors track by $index"
+		ng-model="val.myColor" ng-change="c.call(c.name)">
+
+		<select ng-model="addressType" ng-options="x for x in types">
+	</select>
+		<br />
+	</select>
+</body>
+</html>

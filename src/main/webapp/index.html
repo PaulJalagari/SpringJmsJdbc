@@ -1,41 +1,63 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<script
-	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.16/angular.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.9/angular.min.js"></script>
 </head>
+
 <body ng-app="myApp">
 	<h1>Employee Info</h1>
 	<div>
-		<form name="saveEmployeeData" ng-controller="myController"
-			ng-submit="submitForm()">
+		<form name="saveEmployeeData" ng-controller="myController" ng-submit="submitForm()">
 
-			First name: <br /> <input type="text" id="firstName"
-				name="firstName" ng-model='formData.firstName'> <br /> <br />
-			Last name: <br /> <input type="text" id="lastName" name="lastName"
-				ng-model='formData.lastName'> <br /> <br /> Email Address:
-			<br /> <input type="text" id="emailId" ng-model="formData.emailId">
+			First name: <br /> <input type="text" id="firstName" name="firstName" ng-model='formData.firstName'> <br />
+			<br />
+			Last name: <br /> <input type="text" id="lastName" name="lastName" ng-model='formData.lastName'> <br />
+			<br /> 
+			Email Address:<br /> <input type="text" id="emailId" ng-model="formData.emailId">
 
-			<br /> <br /> Address1 : <br /> <select ng-model="addressType"
-				ng-options="x for x in types">
+			<br /> <br /> Address1 : <br />
+			<!-- <select ng-model="selectedAddressTypeIdeal" ng-click="updateOptions(selectedAddressTypeIdeal)"
+				ng-options="x.label for x in types"  value="{{x.label}}">
+				 <option value="">Select type of address</option>
+			</select><br /> -->
+			<style>
+				.d-none {
+					display: none;
+				}
+			</style>
+			<select ng-model="selectedAddressTypeIdeal" ng-change="updateOptions(selectedAddressTypeIdeal)">
+				<option ng-class="x.disable? 'd-none':''" ng-repeat="x in types" value="{{x.label}}">{{x.label}}
+				</option>
 			</select><br />
+
 			<textarea rows="3" cols="25" id="address1" name="address1"
 				ng-model="formData.employeeAddresses[0].addressDetails">
               Address1 
             </textarea>
 			<br />
 			<div ng-repeat="element in elements">
-				<br /> Address{{$index+2}} : <br /> <select ng-model="addressType"
-					ng-options="x for x in types">
+				<br /> Address{{$index+2}} : <br />
+				{{selectedAddressType[$index]}}
+				<!-- <select ng-model="selectedAddressType[$index]"
+					ng-options="x.label for x in types track by x.label" ng-change="updateOptionsWithIndex($index)" value="{{x.label}}">
+				 <option value="">Select type of address</option>
+				</select> <br /> -->
+				<select ng-model="selectedAddressType[$index]" ng-change="updateOptions(selectedAddressType[$index])">
+					<option ng-class="x.disable? 'd-none':''" ng-repeat="x in types" value="{{x.label}}">{{x.label}}
+					</option>
 				</select><br />
-				<textarea rows="3" cols="25" name="address1"
-					ng-model="element.addressDetails">
+
+				<!-- <select ng-change="updateOptionsWithIndex($index)" ng-model="selectedAddressType[$index]">
+        		 <option ng-repeat="x.label for x in types" ng-value="{{x.label}}">{{x.label}}</option>
+    		</select><br /> -->
+				<textarea rows="3" cols="25" name="address1" ng-model="element.addressDetails">
               Address1 
             </textarea>
 				<br />
 			</div>
-			<br /> <b>Click here to add Another Address:</b><br /> <input
-				type="button" value="Add Another Address" ng-click="newItem()" /> <br />
+			<br /> <b>Click here to add Another Address:</b><br /> <input type="button" value="Add Another Address"
+				ng-click="newItem()" /> <br />
 
 
 			<button type="submit" ng-click='insertData()'>Submit</button>
@@ -48,66 +70,116 @@
 		var myApp = angular.module('myApp', []);
 
 		myApp
-				.controller(
-						"myController",
-						function($scope, $http) {
-							$scope.formData = {
-								employeeAddresses : []
-							};
-							$scope.counter = 1;
-							$scope.elements = [];
-							$scope.types = [ "Permanent", "Current", "Office" ];
-							var onSuccess = function(data, status, headers,
-									config) {
-								$scope.data = data;
-								$http
-										.get(
-												"http://localhost:8080/spring-activemq-sample/employeeInfo/consume")
-										.success(onSuccess).error(onError);
-							};
+			.controller(
+				"myController",
+				function ($scope, $http) {
+					$scope.formData = {
+						employeeAddresses: []
+					};
+					$scope.counter = 1;
+					$scope.selectedAddressType = {};
+					//$scope.selectedAddressTypeIdeal='';
+					$scope.elements = [];
+					$scope.inUse = [];
 
-							var onError = function(data, status, headers,
-									config) {
-								$scope.error = status;
-							}
+					$scope.types = [{ label: "Permanent", disable: false, id: 1 }, { label: "Current", disable: false, id: 2 }, { label: "Office", disable: false, id: 3 }];
+					$scope.updateOptions = function (item) {
 
-							var getAPISuccess = function(data, status, headers,
-									config) {
-								$scope.data = data;
-							};
 
-							$scope.newItem = function() {
-								$scope.counter++;
-								console.log($scope.elements, $scope.counter);
-								$scope.elements.push({
-									addressDetails : ''
-								});
-								/* if($scope.elements.length){
-								$scope.formData.employeeAddresses[$scope.counter].push($scope.elements[$scope.counter-1])
-								} */
-							}
-							$scope.insertData = function() {
-								if ($scope.elements.length) {
-									for (var i = 0; i < $scope.elements.length; i++) {
-										delete $scope.elements[i].$$hashKey;
-										$scope.formData.employeeAddresses
-												.push($scope.elements[i])
-									}
-								}
-								console.log($scope.formData)
-								var postReq = {
-									method : 'POST',
-									url : 'http://localhost:8080/spring-activemq-sample/employeeInfo/produce',
-									data : $scope.formData
-								};
-								console.log(postReq.data);
 
-								$http(postReq).success(onSuccess)
-										.error(onError);
-
+						//setTimeout(function(){
+						$scope.types.forEach(function (value, index) {
+							if (value.label === item) {
+								value.disable = true;
+								//val.childNodes[index].disabled=true;
 							}
 						});
+						//},500)
+
+
+
+
+						//$scope.types[item].disable=true;
+						$scope.inUse.push(item);
+						$scope.selectedAddressTypeIdeal = item;
+					}
+					$scope.updateOptionsWithIndex = function (item) {
+						//$scope.inUse.push($scope.selectedAddressType+index);
+						debugger;
+						console.log(item);
+						angular.forEach($scope.types, function (value, index) {
+							debugger;
+							if ($scope.selectedAddressType && $scope.selectedAddressType[item] && value.label === $scope.selectedAddressType[item].label) {
+								value.disable = true;
+							}
+						});
+					}
+					$scope.isDisable = function (item) {
+						return $scope.inUse.indexOf(item) !== -1;
+					}
+					var onSuccess = function (data, status, headers,
+						config) {
+						$scope.data = data;
+						$http
+							.get(
+								"http://localhost:8080/spring-activemq-sample/employeeInfo/consume")
+							.then(onSuccess, onError);
+					};
+
+					var onError = function (data, status, headers,
+						config) {
+						$scope.error = status;
+					}
+
+					var getAPISuccess = function (data, status, headers,
+						config) {
+						$scope.data = data;
+					};
+
+					$scope.newItem = function () {
+						$scope.counter++;
+						console.log($scope.elements, $scope.counter);
+						$scope.elements.push({
+							addressDetails: ''
+						});
+						// angular.forEach($scope.types,function(value,index){
+						// 	 debugger;
+						// 	/* if($scope.selectedAddressTypeIdeal && value.label===$scope.selectedAddressTypeIdeal){
+						// 		value.disable=true;
+						// 		found=false;
+						// 	} */
+						// 	 $scope.inUse.find(function(valueInternal,i){
+						// 			if(value.label===valueInternal)
+						// 				value.disable=true;
+						// 		}); 
+						// }); 
+						/* if($scope.elements.length){
+						$scope.formData.employeeAddresses[$scope.counter].push($scope.elements[$scope.counter-1])
+						} */
+					}
+					$scope.insertData = function () {
+						if ($scope.elements.length) {
+							for (var i = 0; i < $scope.elements.length; i++) {
+								delete $scope.elements[i].$$hashKey;
+								$scope.formData.employeeAddresses
+									.push($scope.elements[i])
+							}
+						}
+						console.log($scope.formData)
+						var postReq = {
+							method: 'POST',
+							url: 'http://localhost:8080/spring-activemq-sample/employeeInfo/produce',
+							data: $scope.formData
+						};
+						console.log(postReq.data);
+
+						$http(postReq).then(onSuccess, onError)
+						//.error(onError);
+
+					}
+				});
 	</script>
 
 </body>
+
 </html>
